@@ -1,0 +1,24 @@
+{
+  "name": "mywikipro/queue-manager",
+  "description": "Queue manager",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Sergey Yastrebov",
+      "email": "serg.yastrebov@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=5.5",
+    "mywikipro/abstract-collection": "dev-master"
+  },
+  "require-dev": {
+    "codeception/codeception": "*"
+  },
+  "autoload": {
+    "psr-0": {
+      "MyWikiPRO": "src"
+    }
+  }
+}
