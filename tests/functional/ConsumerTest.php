@@ -2,10 +2,10 @@
 
 namespace QueueTest\Integration\Consumer;
 
-use MyWikiPRO\Component\Queue\Consumer;
-use MyWikiPRO\Component\Queue\Manager;
-use MyWikiPRO\Component\Queue\Parser;
-use MyWikiPRO\Component\Queue\Event;
+use MyWikiPRO\Component\QueueManager\Consumer;
+use MyWikiPRO\Component\QueueManager;
+use MyWikiPRO\Component\QueueManager\Parser;
+use MyWikiPRO\Component\QueueManager\Event;
 
 /**
  * Менеджер очередей / Тестирование консьюмера
@@ -131,7 +131,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         while (--$attempts >= 0) {
             // Проверяем что сообщение лежит в очереди
             $message = $queue->get();
-            $this->assertInstanceOf('\MyWikiPRO\Component\Queue\Entity\Message', $message);
+            $this->assertInstanceOf('\MyWikiPRO\Component\QueueManager\Entity\Message', $message);
             $this->assertEquals($attempts, $message->getAttempt());
 
             $queue->unlock($message->getId());
@@ -165,7 +165,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         while (--$attempts >= 0) {
             // Проверяем что сообщение лежит в очереди
             $message = $queue->get();
-            $this->assertInstanceOf('\MyWikiPRO\Component\Queue\Entity\Message', $message);
+            $this->assertInstanceOf('\MyWikiPRO\Component\QueueManager\Entity\Message', $message);
             $this->assertEquals($publishAttempts, $message->getAttempt());
 
             $queue->unlock($message->getId());
@@ -173,7 +173,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         }
 
         // Сообщение окончательно ушло из очереди
-        $this->assertInstanceOf('\MyWikiPRO\Component\Queue\Entity\Message', $queue->shift());
+        $this->assertInstanceOf('\MyWikiPRO\Component\QueueManager\Entity\Message', $queue->shift());
     }
 
     /**
@@ -209,11 +209,11 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
     /**
      * Конфигурация rabbit адаптера
      *
-     * @return Manager\Adapter\Rabbit\Configuration
+     * @return Manager\Adapter\Rabbit\RabbitConfiguration
      */
     private function getRabbitAdapterConfig()
     {
-        $adapterConfig = new Manager\Adapter\Rabbit\Configuration();
+        $adapterConfig = new Manager\Adapter\Rabbit\RabbitConfiguration();
         $adapterConfig
             ->setHost('localhost')
             ->setPort('5672')
@@ -229,7 +229,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
      */
     private function attemptsConfig()
     {
-        $exchange = new Manager\Exchange\Configuration(
+        $exchange = new Manager\Exchange\ExchangeConfiguration(
             'testAttemptsExchange',
             Manager\Exchange\ExchangeInterface::TYPE_DIRECT
         );
@@ -239,11 +239,11 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         $exchangeCollection->attach($exchange);
 
         // Основная очередь
-        $queue = new Manager\Queue\Configuration('testAttemptsQueue');
+        $queue = new Manager\Queue\QueueConfiguration('testAttemptsQueue');
         $queue->setRejectRoute($exchange, 'reject');
 
         // Очередь с ошибками
-        $rejectQueue = new Manager\Queue\Configuration('testAttemptsRejectQueue', 1);
+        $rejectQueue = new Manager\Queue\QueueConfiguration('testAttemptsRejectQueue', 1);
         $rejectQueue->setTimeoutRoute($exchange, 'rejectRoute');
 
         $queueCollection = new Manager\Queue\ConfigurationCollection();
@@ -252,9 +252,9 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         // Связываем
         $bindCollection = new Manager\Bind\Collection();
         $bindCollection
-            ->attach(new Manager\Bind\Configuration($exchange, $queue, 'route'))
-            ->attach(new Manager\Bind\Configuration($exchange, $queue, 'rejectRoute'))
-            ->attach(new Manager\Bind\Configuration($exchange, $rejectQueue, 'reject'));
+            ->attach(new Manager\Bind\BindConfiguration($exchange, $queue, 'route'))
+            ->attach(new Manager\Bind\BindConfiguration($exchange, $queue, 'rejectRoute'))
+            ->attach(new Manager\Bind\BindConfiguration($exchange, $rejectQueue, 'reject'));
 
         $config = new Manager\Configuration\Configuration();
         $config
@@ -271,12 +271,12 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
      */
     private function reQueueConfig()
     {
-        $exchange = new Manager\Exchange\Configuration(
+        $exchange = new Manager\Exchange\ExchangeConfiguration(
             'testReQueueExchange',
             Manager\Exchange\ExchangeInterface::TYPE_DIRECT
         );
 
-        $queue = new Manager\Queue\Configuration('testReQueueQueue');
+        $queue = new Manager\Queue\QueueConfiguration('testReQueueQueue');
 
         $exchangeCollection = new Manager\Exchange\ConfigurationCollection();
         $exchangeCollection->attach($exchange);
@@ -285,7 +285,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         $queueCollection->attach($queue);
 
         $bindCollection = new Manager\Bind\Collection();
-        $bindCollection->attach(new Manager\Bind\Configuration($exchange, $queue, 'route'));
+        $bindCollection->attach(new Manager\Bind\BindConfiguration($exchange, $queue, 'route'));
 
         $config = new Manager\Configuration\Configuration();
         $config
@@ -302,12 +302,12 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
      */
     private function pluginConfig()
     {
-        $exchange = new Manager\Exchange\Configuration(
+        $exchange = new Manager\Exchange\ExchangeConfiguration(
             'testPluginExchange',
             Manager\Exchange\ExchangeInterface::TYPE_DIRECT
         );
 
-        $queue = new Manager\Queue\Configuration('testPluginQueue');
+        $queue = new Manager\Queue\QueueConfiguration('testPluginQueue');
 
         $exchangeCollection = new Manager\Exchange\ConfigurationCollection();
         $exchangeCollection->attach($exchange);
@@ -316,7 +316,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         $queueCollection->attach($queue);
 
         $bindCollection = new Manager\Bind\Collection();
-        $bindCollection->attach(new Manager\Bind\Configuration($exchange, $queue, 'route'));
+        $bindCollection->attach(new Manager\Bind\BindConfiguration($exchange, $queue, 'route'));
 
         $config = new Manager\Configuration\Configuration();
         $config

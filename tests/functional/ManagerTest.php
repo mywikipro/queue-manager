@@ -2,8 +2,8 @@
 
 namespace QueueTest\Integration\Manager;
 
-use MyWikiPRO\Component\Queue\Manager;
-use MyWikiPRO\Component\Queue\Parser;
+use MyWikiPRO\Component\QueueManager;
+use MyWikiPRO\Component\QueueManager\Parser;
 
 /**
  * Менеджер очередей / Тестирование менеджера
@@ -82,7 +82,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
      */
     public function testCreateService()
     {
-        $this->assertInstanceOf('\MyWikiPRO\Component\Queue\Manager\Service', $this->service);
+        $this->assertInstanceOf('\MyWikiPRO\Component\QueueManager\Service', $this->service);
     }
 
     /**
@@ -110,8 +110,8 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         );
 
         // Получаем сообщение
-        $this->assertInstanceOf('\MyWikiPRO\Component\Queue\Entity\Message', $queue1->shift());
-        $this->assertInstanceOf('\MyWikiPRO\Component\Queue\Entity\Message', $queue2->shift());
+        $this->assertInstanceOf('\MyWikiPRO\Component\QueueManager\Entity\Message', $queue1->shift());
+        $this->assertInstanceOf('\MyWikiPRO\Component\QueueManager\Entity\Message', $queue2->shift());
         $this->assertNull($queue1->shift());
         $this->assertNull($queue2->shift());
 
@@ -124,8 +124,8 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         );
 
         // Получаем сообщение
-        $this->assertInstanceOf('\MyWikiPRO\Component\Queue\Entity\Message', $queue1->shift());
-        $this->assertInstanceOf('\MyWikiPRO\Component\Queue\Entity\Message', $queue2->shift());
+        $this->assertInstanceOf('\MyWikiPRO\Component\QueueManager\Entity\Message', $queue1->shift());
+        $this->assertInstanceOf('\MyWikiPRO\Component\QueueManager\Entity\Message', $queue2->shift());
         $this->assertNull($queue1->shift());
         $this->assertNull($queue2->shift());
     }
@@ -157,7 +157,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         sleep(2);
 
         // Получаем сообщение
-        $this->assertInstanceOf('\MyWikiPRO\Component\Queue\Entity\Message', $queue2->shift());
+        $this->assertInstanceOf('\MyWikiPRO\Component\QueueManager\Entity\Message', $queue2->shift());
         $this->assertNull($queue1->shift());
         $this->assertNull($queue2->shift());
     }
@@ -186,25 +186,25 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
         // Получаем и блокируем сообщение
         $message = $queue->get();
-        $this->assertInstanceOf('\MyWikiPRO\Component\Queue\Entity\Message', $message);
+        $this->assertInstanceOf('\MyWikiPRO\Component\QueueManager\Entity\Message', $message);
         $this->assertNull($queue->shift());
 
         // Возвращаем в очередь
         $queue->unlock($message->getId());
 
         // И снова забираем
-        $this->assertInstanceOf('\MyWikiPRO\Component\Queue\Entity\Message', $queue->shift());
+        $this->assertInstanceOf('\MyWikiPRO\Component\QueueManager\Entity\Message', $queue->shift());
         $this->assertNull($queue->shift());
     }
 
     /**
      * Конфигурация rabbit адаптера
      *
-     * @return Manager\Adapter\Rabbit\Configuration
+     * @return Manager\Adapter\Rabbit\RabbitConfiguration
      */
     private function getRabbitAdapterConfig()
     {
-        $adapterConfig = new Manager\Adapter\Rabbit\Configuration();
+        $adapterConfig = new Manager\Adapter\Rabbit\RabbitConfiguration();
         $adapterConfig
             ->setHost('localhost')
             ->setPort('5672')
@@ -218,7 +218,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
     /**
      * Конфигурация для создания сервиса
      *
-     * @return Manager\Adapter\Rabbit\Configuration
+     * @return Manager\Adapter\Rabbit\RabbitConfiguration
      */
     private function createServiceConfig()
     {
@@ -239,10 +239,10 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
      */
     private function fanoutConfig()
     {
-        $queue1 = new Manager\Queue\Configuration('testFanoutQueue1');
-        $queue2 = new Manager\Queue\Configuration('testFanoutQueue2');
+        $queue1 = new Manager\Queue\QueueConfiguration('testFanoutQueue1');
+        $queue2 = new Manager\Queue\QueueConfiguration('testFanoutQueue2');
 
-        $exchange = new Manager\Exchange\Configuration(
+        $exchange = new Manager\Exchange\ExchangeConfiguration(
             'testFanoutExchange1',
             Manager\Exchange\ExchangeInterface::TYPE_FANOUT
         );
@@ -255,8 +255,8 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
         $bindCollection = new Manager\Bind\Collection();
         $bindCollection
-            ->attach(new Manager\Bind\Configuration($exchange, $queue1, 'route'))
-            ->attach(new Manager\Bind\Configuration($exchange, $queue2, 'route'));
+            ->attach(new Manager\Bind\BindConfiguration($exchange, $queue1, 'route'))
+            ->attach(new Manager\Bind\BindConfiguration($exchange, $queue2, 'route'));
 
         $config = new Manager\Configuration\Configuration();
         $config
@@ -275,11 +275,11 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
      */
     public function timeoutRouteConfig()
     {
-        $exchange1 = new Manager\Exchange\Configuration(
+        $exchange1 = new Manager\Exchange\ExchangeConfiguration(
             'testTimeoutRouteExchange1',
             Manager\Exchange\ExchangeInterface::TYPE_DIRECT
         );
-        $exchange2 = new Manager\Exchange\Configuration(
+        $exchange2 = new Manager\Exchange\ExchangeConfiguration(
             'testTimeoutRouteExchange2',
             Manager\Exchange\ExchangeInterface::TYPE_DIRECT
         );
@@ -287,17 +287,17 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         $exchangeCollection = new Manager\Exchange\ConfigurationCollection();
         $exchangeCollection->attach($exchange1)->attach($exchange2);
 
-        $queue1 = new Manager\Queue\Configuration('testTimeoutRouteQueue1', 1);
+        $queue1 = new Manager\Queue\QueueConfiguration('testTimeoutRouteQueue1', 1);
         $queue1->setTimeoutRoute($exchange2, 'delay');
-        $queue2 = new Manager\Queue\Configuration('testTimeoutRouteQueue2');
+        $queue2 = new Manager\Queue\QueueConfiguration('testTimeoutRouteQueue2');
 
         $queueCollection = new Manager\Queue\ConfigurationCollection();
         $queueCollection->attach($queue1)->attach($queue2);
 
         $bindCollection = new Manager\Bind\Collection();
         $bindCollection
-            ->attach(new Manager\Bind\Configuration($exchange1, $queue1, 'route'))
-            ->attach(new Manager\Bind\Configuration($exchange2, $queue2, 'delay'));
+            ->attach(new Manager\Bind\BindConfiguration($exchange1, $queue1, 'route'))
+            ->attach(new Manager\Bind\BindConfiguration($exchange2, $queue2, 'delay'));
 
         $config = new Manager\Configuration\Configuration();
         $config
@@ -314,7 +314,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
      */
     public function getNackMessageConfig()
     {
-        $exchange = new Manager\Exchange\Configuration(
+        $exchange = new Manager\Exchange\ExchangeConfiguration(
             'testGetNackExchange',
             Manager\Exchange\ExchangeInterface::TYPE_DIRECT
         );
@@ -322,13 +322,13 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         $exchangeCollection = new Manager\Exchange\ConfigurationCollection();
         $exchangeCollection->attach($exchange);
 
-        $queue = new Manager\Queue\Configuration('testGetNackQueue');
+        $queue = new Manager\Queue\QueueConfiguration('testGetNackQueue');
 
         $queueCollection = new Manager\Queue\ConfigurationCollection();
         $queueCollection->attach($queue);
 
         $bindCollection = new Manager\Bind\Collection();
-        $bindCollection->attach(new Manager\Bind\Configuration($exchange, $queue, 'route'));
+        $bindCollection->attach(new Manager\Bind\BindConfiguration($exchange, $queue, 'route'));
 
         $config = new Manager\Configuration\Configuration();
         $config
