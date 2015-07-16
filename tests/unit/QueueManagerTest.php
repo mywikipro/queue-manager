@@ -95,13 +95,11 @@ class QueueManagerTest extends \Codeception\TestCase\Test
         $exchangeCollection = new Manager\Exchange\ConfigurationCollection();
         $exchangeCollection->attach(new Manager\Exchange\Configuration('', Manager\Exchange\ExchangeInterface::TYPE_DIRECT));
 
-        $config = new Manager\Configuration\Configuration();
-        $config
-            ->setAdapterConfig($this->getRabbitAdapterConfig())
-            ->setQueueCollection($queueCollection)
-            ->setExchangeCollection($exchangeCollection)
-            ->setBindCollection(new Manager\Bind\Collection());
-
-        return $config;
+        return new Manager\Configuration\Configuration(
+            $this->getRabbitAdapterConfig(),
+            $queueCollection,
+            $exchangeCollection,
+            new Manager\Bind\Collection()
+        );
     }
 }

@@ -40,7 +40,7 @@ class Consumer
      * @param Plugin\Collection      $pluginCollection
      */
     public function __construct(
-        QueueManagerInterface       $queueManager,
+        QueueManagerInterface  $queueManager,
         Parser\ParserInterface $parser,
         Plugin\Collection      $pluginCollection
     ) {
@@ -72,7 +72,7 @@ class Consumer
     public function consumeOne($queueName)
     {
         /** @var MessageInterface $message */
-        $queue   = $this->queueManager->init()->getQueue($queueName);
+        $queue   = $this->queueManager->getQueue($queueName);
         $message = $queue->get();
         if (!$message) {
             throw new EmptyException();

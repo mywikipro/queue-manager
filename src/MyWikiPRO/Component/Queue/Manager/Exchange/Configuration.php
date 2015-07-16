@@ -32,12 +32,15 @@ final class Configuration
      */
     public function __construct($name, $type)
     {
-        if (!in_array($type, $this->getTypes(), true)) {
-            throw new Exception(sprintf('Задан неверный тип обменника `%s`', $type));
+        if ( ! in_array($type, $this->getTypes(), true)) {
+            throw new Exception(sprintf(
+                'Wrong exchange type `%s`, expected one of [%s]',
+                $type, implode(',', $this->getTypes())
+            ));
         }
 
-        $this->name = (string)$name;
-        $this->type = (string)$type;
+        $this->name = $name;
+        $this->type = $type;
     }
 
     /**

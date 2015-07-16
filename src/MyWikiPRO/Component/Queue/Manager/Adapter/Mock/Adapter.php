@@ -35,14 +35,6 @@ final class Adapter implements AdapterInterface
     /**
      * {@inheritdoc}
      */
-    public function init()
-    {
-
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function bind(Exchange\Configuration $exchangeConfig, Queue\Configuration $queueConfig, $routingKey)
     {
 

@@ -18,13 +18,6 @@ interface AdapterInterface
     const TYPE_MOCK   = 'mock';
 
     /**
-     * Инициализация адаптера
-     *
-     * @return bool
-     */
-    public function init();
-
-    /**
      * Связать очередь с обменником
      *
      * @param Exchange\Configuration $exchangeConfig

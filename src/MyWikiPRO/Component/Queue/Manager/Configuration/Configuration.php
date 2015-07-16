@@ -13,7 +13,7 @@ use MyWikiPRO\Component\Queue\Manager\Bind;
  * Class Configuration
  * @package MyWikiPRO\Component\Queue\Manager\Configuration
  */
-class Configuration implements ConfigurationInterface
+class Configuration
 {
     /**
      * @var AdapterConfigurationInterface
@@ -36,19 +36,29 @@ class Configuration implements ConfigurationInterface
     private $bindCollection;
 
     /**
-     * Задать конфигурацию адаптера
+     * Constructor
      *
-     * @param AdapterConfigurationInterface $adapterConfig
-     * @return $this
+     * @param AdapterConfigurationInterface    $adapterConfig
+     * @param Queue\ConfigurationCollection    $queueConfigurationCollection
+     * @param Exchange\ConfigurationCollection $exchangeConfigurationCollection
+     * @param Bind\Collection                  $bindCollection
      */
-    public function setAdapterConfig(AdapterConfigurationInterface $adapterConfig)
-    {
-        $this->adapterConfig = $adapterConfig;
-        return $this;
+    public function __construct(
+        AdapterConfigurationInterface    $adapterConfig,
+        Queue\ConfigurationCollection    $queueConfigurationCollection,
+        Exchange\ConfigurationCollection $exchangeConfigurationCollection,
+        Bind\Collection                  $bindCollection
+    ) {
+        $this->adapterConfig                   = $adapterConfig;
+        $this->queueConfigurationCollection    = $queueConfigurationCollection;
+        $this->exchangeConfigurationCollection = $exchangeConfigurationCollection;
+        $this->bindCollection                  = $bindCollection;
     }
 
     /**
-     * {@inheritdoc}
+     * Конфигурация адаптера
+     *
+     * @return AdapterConfigurationInterface
      */
     public function getAdapterConfig()
     {
@@ -56,19 +66,9 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
-     * Задать коллекцию конфигураций очередей
+     * Коллекция очередей
      *
-     * @param Queue\ConfigurationCollection $collection
-     * @return $this
-     */
-    public function setQueueCollection(Queue\ConfigurationCollection $collection)
-    {
-        $this->queueConfigurationCollection = $collection;
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
+     * @return Queue\ConfigurationCollection
      */
     public function getQueueCollection()
     {
@@ -76,19 +76,9 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
-     * Задать коллекцию конфигураций очередей
+     * Коллекция обменников
      *
-     * @param Exchange\ConfigurationCollection $collection
-     * @return $this
-     */
-    public function setExchangeCollection(Exchange\ConfigurationCollection $collection)
-    {
-        $this->exchangeConfigurationCollection = $collection;
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
+     * @return Exchange\ConfigurationCollection
      */
     public function getExchangeCollection()
     {
@@ -96,19 +86,9 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
-     * Задать коллекцию конфигураций очередей
+     * Коллекция связей
      *
-     * @param Bind\Collection $collection
-     * @return $this
-     */
-    public function setBindCollection(Bind\Collection $collection)
-    {
-        $this->bindCollection = $collection;
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
+     * @return Bind\Collection
      */
     public function getBindCollection()
     {

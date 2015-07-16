@@ -13,16 +13,6 @@ use MyWikiPRO\Component\Queue\Manager\Queue;
  */
 interface BindInterface
 {
-    const ROUTING_KEY_PAID            = 'paid';
-    const ROUTING_KEY_PAID_REJECT     = 'paidReject';
-    const ROUTING_KEY_PAID_REJECTED   = 'paidRejected';
-    const ROUTING_KEY_SEND            = 'send';
-    const ROUTING_KEY_SEND_REJECT     = 'sendReject';
-    const ROUTING_KEY_SEND_REJECTED   = 'sendRejected';
-    const ROUTING_KEY_UPDATE          = 'update';
-    const ROUTING_KEY_UPDATE_REJECT   = 'updateReject';
-    const ROUTING_KEY_UPDATE_REJECTED = 'updateRejected';
-
     /**
      * Обменник
      *
